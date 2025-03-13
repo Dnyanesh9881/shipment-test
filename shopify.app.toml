@@ -1,0 +1,34 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "525f24980473e535a3a43889943037f9"
+application_url = "https://assembled-again-statutory-costs.trycloudflare.com"
+embedded = true
+name = "shipment-test"
+handle = "shipment-test-app"
+
+[build]
+include_config_on_deploy = true
+dev_store_url = "bubble-bazaar-store.myshopify.com"
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2025-01"
+
+  [[webhooks.subscriptions]]
+  topics = [ "orders/create" ]
+  delivery_method = "http"
+  uri = "https://8b5d-106-219-154-15.ngrok-free.app/api/webhooks/orders/create"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_orders, write_orders, read_shipping, write_shipping, read_products, write_products, read_fulfillments, write_fulfillments, read_assigned_fulfillment_orders, write_assigned_fulfillment_orders, read_merchant_managed_fulfillment_orders, write_merchant_managed_fulfillment_orders, read_third_party_fulfillment_orders, write_third_party_fulfillment_orders, read_product_listings, read_customers, write_customers, read_collection_listings, read_inventory, write_inventory, read_locations"
+
+[auth]
+redirect_urls = [
+  "https://assembled-again-statutory-costs.trycloudflare.com/auth/callback",
+  "https://assembled-again-statutory-costs.trycloudflare.com/auth/shopify/callback",
+  "https://assembled-again-statutory-costs.trycloudflare.com/api/auth/callback"
+]
+
+[pos]
+embedded = false
