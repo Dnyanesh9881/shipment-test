@@ -8,7 +8,6 @@ import shopify from "./shopify.js";
 import productCreator from "./product-creator.js";
 import PrivacyWebhookHandlers from "./privacy.js";
 import ordersRoutes from "./routes/orders.js";
-import { DeliveryMethod } from "@shopify/shopify-api";
 
 const PORT = parseInt(
   process.env.BACKEND_PORT || process.env.PORT || "3000",
@@ -32,47 +31,7 @@ app.get(
 app.post(
   shopify.config.webhooks.path,
   shopify.processWebhooks({
-    webhookHandlers: {
-
-      CUSTOMERS_DATA_REQUEST: {
-        deliveryMethod: DeliveryMethod.Http,
-        callbackUrl: "/api/webhooks",
-        callback: async (topic, shop, body, webhookId) => {
-          const payload = JSON.parse(body);
-        },
-      },
-      CUSTOMERS_REDACT: {
-        deliveryMethod: DeliveryMethod.Http,
-        callbackUrl: "/api/webhooks",
-        callback: async (topic, shop, body, webhookId) => {
-          const payload = JSON.parse(body);
-        },
-      },
-      SHOP_REDACT: {
-        deliveryMethod: DeliveryMethod.Http,
-        callbackUrl: "/api/webhooks",
-        callback: async (topic, shop, body, webhookId) => {
-          const payload = JSON.parse(body);
-        },
-      },
-      ORDERS_CREATE: {
-        deliveryMethod: DeliveryMethod.Http,
-        callbackUrl: "/api/webhooks",
-        callback: async (topic, shop, body, webhookId) => {
-          const payload = JSON.parse(body);
-          console.log("New order received:", payload);
-        },
-      },
-      PRODUCTS_UPDATE: {
-        deliveryMethod: DeliveryMethod.Http,
-        callbackUrl: "/api/webhooks",
-        callback: async (topic, shop, body, webhookId) => {
-          const payload = JSON.parse(body);
-          console.log("Product updated received:", payload);
-        },
-      },
-    }
-
+    webhookHandlers: PrivacyWebhookHandlers
   })
 );
 
@@ -127,7 +86,7 @@ app.get("/api/store/info", async (req, res) => {
 
     const response = await client.request(query);
 
-    // console.log("storeInfo", response.data.shop);
+    console.log("storeInfo", response.data.shop);
 
     res.status(200).send(response.data.shop);
   } catch (error) {
@@ -158,7 +117,7 @@ app.get("/api/collections", async (req, res) => {
 }`;
     const response = await client.request(query);
 
-    console.log("collections", response.data.collections.nodes);
+    // console.log("collections", response.data.collections.nodes);
 
     res.status(200).send(response.data.collections.nodes);
   } catch (error) {
