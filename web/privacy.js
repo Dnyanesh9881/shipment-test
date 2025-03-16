@@ -34,74 +34,74 @@ export default {
       const payload = JSON.parse(body);
       console.log("New order received:", payload);
       try {
-      const weight=payload.line_items.reduce((acc, item)=> acc + item.grams);
-      const data={
-         topic:"shipmentService-shipment-create",
-        body:{
-        governmentId: "NA",
-         invoiceNumber:"Ship15454",
-         invoiceDate:"2023-10-06 11:56:39",
-         isScheduledConfirmed: true,
-        receiverDetails:{
+        const weight = payload.line_items.reduce((acc, item) => acc + item.grams, 0);
+
+        const data = {
+          governmentId: "NA",
+          invoiceNumber: "Ship15454",
+          invoiceDate: "2023-10-06 11:56:39",
+          isScheduledConfirmed: true,
+          receiverDetails: {
             email: payload.customer.email,
-            address: payload.customer.default_address,
+            address: {
+              city: payload.customer.default_address.city,
+              state: payload.customer.default_address.province,
+              addressLine: payload.customer.default_address.address1,
+              pincode: payload.customer.default_address.zip
+            },
             pincode: payload.customer.default_address.zip,
             phoneNo: payload.customer.default_address.phone,
             altPhoneNo: payload.customer.default_address.phone
-        },
-        senderDetails:{
-           email: "sender@example.in",
+          },
+          senderDetails: {
+            email: "sender@example.in",
             address: {
-                city: "gurgaon",
-                state: "Haryana",
-                addressLine: "sample sender address line",
-                pincode: "123456"
+              city: "gurgaon",
+              state: "Haryana",
+              addressLine: "sample sender address line",
+              pincode: "123456"
             },
             pincode: "123456",
             phoneNo: "9999999999",
             altPhoneNo: "9898989898"
-        },
-        paymentDetails:{
-            isPaymentDone: payload.financial_status ==="paid"? true : false,
+          },
+          paymentDetails: {
+            isPaymentDone: payload.financial_status === "paid" ? true : false,
             paymentMode: "NA",
             paymentTransactionId: "NA",
             amount: payload.total_price
-        },
-        shipmentDetails:{
+          },
+          shipmentDetails: {
             dimensions: {
-                    length: 50,
-                    width: 50,
-                    height: 50
-                },
+              length: 50,
+              width: 50,
+              height: 50
+            },
             weight: weight,
             vWeight: weight,
-            eWayBillNo:"NA"
-        },
-        products: payload.line_items.map((item) => ({
-          SKU: item.sku,
-          price: item.price,
-          quantity: item.quantity,
-          productId: item.id
-        }))
-      },
-      method:"POST",
-      params:{},
-      headers:{},
-      query:{}
-    };
-    console.log("New order body:", data);
-   
-      const response = await axios('http://localhost:9090', {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        data:data
-      });
-      console.log(response.data);
-    } catch (error) {
-      console.error('Error: In Shipment', error);
+            eWayBillNo: "NA"
+          },
+          products: payload.line_items.map((item) => ({
+            SKU: 'SKU1234',
+            price: item.price,
+            quantity: item.quantity,
+            productId: item.id
+          }))
+        };
+
+        console.log("New order body:", data);
+
+        const response = await axios('http://localhost:5001/v1/user/shipment/new', {
+          method: "POST",
+          headers: { Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6ImFua2l0Lm1pc2hyYSIsInVzZXJFbWFpbCI6ImFua2l0Lm1pc2hyYUB0ZWNoZWFnbGUuaW4iLCJwcm9qZWN0TmFtZSI6IlRlc3RpbmciLCJpYXQiOjE3MzU4Mjc2MDB9.I6R5kmY8HxowzMuZFeLWaUGFp0rFHQnGfS92Uil_5Nc" },
+          data: data
+        });
+        console.log(response.data);
+      } catch (error) {
+        console.error('Error: In Shipment', error);
+      }
+
     }
-    
-  }
   },
   PRODUCTS_UPDATE: {
     deliveryMethod: DeliveryMethod.Http,
