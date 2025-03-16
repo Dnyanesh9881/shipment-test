@@ -8,6 +8,7 @@ import shopify from "./shopify.js";
 import productCreator from "./product-creator.js";
 import PrivacyWebhookHandlers from "./privacy.js";
 import ordersRoutes from "./routes/orders.js";
+import { DeliveryMethod } from "@shopify/shopify-api";
 
 const PORT = parseInt(
   process.env.BACKEND_PORT || process.env.PORT || "3000",
@@ -30,7 +31,49 @@ app.get(
 );
 app.post(
   shopify.config.webhooks.path,
-  shopify.processWebhooks({ webhookHandlers: PrivacyWebhookHandlers })
+  shopify.processWebhooks({
+    webhookHandlers: {
+
+      CUSTOMERS_DATA_REQUEST: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/api/webhooks",
+        callback: async (topic, shop, body, webhookId) => {
+          const payload = JSON.parse(body);
+        },
+      },
+      CUSTOMERS_REDACT: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/api/webhooks",
+        callback: async (topic, shop, body, webhookId) => {
+          const payload = JSON.parse(body);
+        },
+      },
+      SHOP_REDACT: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/api/webhooks",
+        callback: async (topic, shop, body, webhookId) => {
+          const payload = JSON.parse(body);
+        },
+      },
+      ORDERS_CREATE: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/api/webhooks",
+        callback: async (topic, shop, body, webhookId) => {
+          const payload = JSON.parse(body);
+          console.log("New order received:", payload);
+        },
+      },
+      PRODUCTS_UPDATE: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/api/webhooks",
+        callback: async (topic, shop, body, webhookId) => {
+          const payload = JSON.parse(body);
+          console.log("Product updated received:", payload);
+        },
+      },
+    }
+
+  })
 );
 
 // If you are adding routes outside of the /api path, remember to
@@ -39,6 +82,91 @@ app.post(
 app.use("/api/*", shopify.validateAuthenticatedSession());
 
 app.use(express.json());
+
+app.get("/api/store/info", async (req, res) => {
+  try {
+    const client = new shopify.api.clients.Graphql({
+      session: res.locals.shopify.session,
+    });
+
+    const query = `query getShopInfo {
+      shop {
+        id
+        name
+        myshopifyDomain
+        email
+        contactEmail
+        currencyCode
+        ianaTimezone
+        timezoneAbbreviation
+        timezoneOffset
+        timezoneOffsetMinutes
+        createdAt
+        primaryDomain {
+          url
+        }
+        shopOwnerName
+        billingAddress {
+          address1
+          address2
+          city
+          province
+          country
+          zip
+        }
+        orderNumberFormatPrefix
+        orderNumberFormatSuffix
+        customerAccounts
+        fulfillmentServices {
+          id
+          serviceName
+        }
+      }
+    }`;
+
+
+    const response = await client.request(query);
+
+    // console.log("storeInfo", response.data.shop);
+
+    res.status(200).send(response.data.shop);
+  } catch (error) {
+    console.error("Error fetching store info:", error);
+    res.status(500).send({ error: error.message });
+  }
+});
+
+app.get("/api/collections", async (req, res) => {
+  try {
+    const client = new shopify.api.clients.Graphql({
+      session: res.locals.shopify.session,
+    });
+
+    const query =
+      `query CustomCollectionList {
+  collections(first: 50) {
+    nodes {
+      id
+      handle
+      title
+      updatedAt
+      descriptionHtml
+      sortOrder
+      templateSuffix
+    }
+  }
+}`;
+    const response = await client.request(query);
+
+    console.log("collections", response.data.collections.nodes);
+
+    res.status(200).send(response.data.collections.nodes);
+  } catch (error) {
+    console.error("Error fetching store info:", error);
+    res.status(500).send({ error: error.message });
+  }
+});
+
 
 app.get("/api/products/count", async (_req, res) => {
   const client = new shopify.api.clients.Graphql({
@@ -52,7 +180,7 @@ app.get("/api/products/count", async (_req, res) => {
       }
     }
   `);
-   console.log("countData", countData);
+  // console.log("countData", countData);
   res.status(200).send({ count: countData.data.productsCount.count });
 });
 
@@ -85,4 +213,6 @@ app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
     );
 });
 
-app.listen(PORT);
+app.listen(PORT, () => {
+
+});

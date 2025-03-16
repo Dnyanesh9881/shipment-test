@@ -28,6 +28,7 @@ export function ProductsCard() {
     setIsPopulating(flag);
   };
 
+
   const handlePopulate = async () => {
     setPopulating(true);
     const response = await fetch("/api/products", { method: "POST" });

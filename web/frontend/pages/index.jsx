@@ -1,94 +1,74 @@
-import {
-  Card,
-  Page,
-  Layout,
-  TextContainer,
-  Image,
-  Stack,
-  Link,
-  Text,
-} from "@shopify/polaris";
-import { TitleBar } from "@shopify/app-bridge-react";
-import { useTranslation, Trans } from "react-i18next";
-
-import { trophyImage } from "../assets";
-
-import { OrdersCard, ProductsCard } from "../components";
+import { Layout, LegacyCard, Page } from "@shopify/polaris";
+import { Card, OrderDetails, OrderGraphs } from "../components";
+import { useState } from "react";
+import { useQuery } from "react-query";
 
 export default function HomePage() {
-  const { t } = useTranslation();
+  const [allOrders, setAllOrders] = useState([]);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalCollections, setTotalCollections] = useState([]);
+
+  const { allOrdersData, refetch } = useQuery({
+    queryKey: ["orders"],
+    queryFn: async () => {
+      const response = await fetch("/api/orders");
+      const data = await response.json();
+      setAllOrders(data);
+      console.log("ALL ORDERS DATA", data);
+      return data;
+    },
+    refetchOnWindowFocus: false,
+  });
+
+  const {
+    productCountData,
+    refetch: refetchProductCount,
+    isLoading: isLoadingCount,
+  } = useQuery({
+    queryKey: ["productCount"],
+    queryFn: async () => {
+      const response = await fetch("/api/products/count");
+      const data = await response.json();
+      console.log("productCount", data)
+      setTotalProducts(data?.count);
+      return data;
+    },
+    refetchOnWindowFocus: false,
+  });
+
+  const {
+    collectionCountData,
+    refetch: refetchCollectionCount
+  } = useQuery({
+    queryKey: ["collections"],
+    queryFn: async () => {
+      const response = await fetch("/api/collections");
+      const data = await response.json();
+      console.log("collections", data)
+      setTotalCollections(data);
+      return data;
+    },
+    refetchOnWindowFocus: false,
+  });
   return (
-    <Page narrowWidth>
-      <TitleBar title={t("HomePage.title")} />
-      <Layout>
-        <Layout.Section>
-          <Card sectioned>
-            <Stack
-              wrap={false}
-              spacing="extraTight"
-              distribution="trailing"
-              alignment="center"
-            >
-              <Stack.Item fill>
-                <TextContainer spacing="loose">
-                  <Text as="h2" variant="headingMd">
-                    {t("HomePage.heading")}
-                  </Text>
-                  <p>
-                    <Trans
-                      i18nKey="HomePage.yourAppIsReadyToExplore"
-                      components={{
-                        PolarisLink: (
-                          <Link url="https://polaris.shopify.com/" external />
-                        ),
-                        AdminApiLink: (
-                          <Link
-                            url="https://shopify.dev/api/admin-graphql"
-                            external
-                          />
-                        ),
-                        AppBridgeLink: (
-                          <Link
-                            url="https://shopify.dev/apps/tools/app-bridge"
-                            external
-                          />
-                        ),
-                      }}
-                    />
-                  </p>
-                  <p>{t("HomePage.startPopulatingYourApp")}</p>
-                  <p>
-                    <Trans
-                      i18nKey="HomePage.learnMore"
-                      components={{
-                        ShopifyTutorialLink: (
-                          <Link
-                            url="https://shopify.dev/apps/getting-started/add-functionality"
-                            external
-                          />
-                        ),
-                      }}
-                    />
-                  </p>
-                </TextContainer>
-              </Stack.Item>
-              <Stack.Item>
-                <div style={{ padding: "0 20px" }}>
-                  <Image
-                    source={trophyImage}
-                    alt={t("HomePage.trophyAltText")}
-                    width={120}
-                  />
-                </div>
-              </Stack.Item>
-            </Stack>
-          </Card>
-        </Layout.Section>
-        <Layout.Section>
-          <ProductsCard />
-          <OrdersCard />
-        </Layout.Section>
-      </Layout>
+    <Page fullWidth>
+      <div className="home-section">
+        <div className="graphs-section">
+          <OrderGraphs />
+        </div>
+        <div className="cards-section">
+          <Layout>
+            <Card title="Total Order" data={allOrders.length} />
+            <Card title="Fullfilled Order" data={allOrders.filter((order) => order.fulfillments.length !==0).length} />
+            <Card title="Remaining Order" data={allOrders.length - allOrders.filter((order) => order.fulfillments.length !==0).length} />
+            <Card title="Total Products" data={totalProducts} />
+            <Card title="Total Collections" data={totalCollections.length} />
+          </Layout>
+        </div>
+        <div className="order-details-section">
+          {/* <OrderDetails /> */}
+        </div>
+      </div>
     </Page>
   );
 }
