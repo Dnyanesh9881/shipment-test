@@ -6,7 +6,7 @@ const router = express.Router();
 // Fetch all orders
 router.get("/orders", async (req, res) => {
   try {
-   const GET_ORDERS_QUERY = `
+    const GET_ORDERS_QUERY = `
   query {
     orders(first: 40, query: "financial_status:'paid'") {
       nodes { 
@@ -29,6 +29,16 @@ router.get("/orders", async (req, res) => {
         createdAt
         updatedAt
         tags
+        totalWeight
+        subtotalPriceSet{
+        presentmentMoney{
+        amount
+        currencyCode
+        }
+        shopMoney{
+         amount
+        currencyCode}
+        }
         lineItems(first: 20) {
           edges {
             node { 
@@ -131,6 +141,8 @@ router.get("/orders", async (req, res) => {
           phone
           province
           zip
+          countryCode
+          provinceCode
         }
         billingAddress { 
           address1
@@ -142,6 +154,7 @@ router.get("/orders", async (req, res) => {
           phone
           province
           zip
+          countryCode
         }
         customer { 
           id
@@ -185,12 +198,10 @@ router.get("/orders", async (req, res) => {
     const client = new shopify.api.clients.Graphql({ session });
 
     // Send query in the correct format
-    const response = await client.query({
-      data: { query: GET_ORDERS_QUERY }
-    });
+    const response = await client.request(GET_ORDERS_QUERY);
 
-    // console.log("ORDER response", response.body.data.orders);
-    res.json(response.body.data.orders.nodes);
+    // console.log("ORDER response", response.data?.orders?.nodes);
+    res.json(response.data?.orders?.nodes);
   } catch (error) {
     console.error("Error fetching orders:", error);
 
@@ -202,12 +213,223 @@ router.get("/orders", async (req, res) => {
   }
 });
 
-router.post("/orders/create", (req, res)=>{
-  console.log("req.body", req.body);
-})
+router.get("/orders/:id", async (req, res) => {
+  let id = req.params.id;
+  console.log("Original ID:", id);
+
+  id = `gid://shopify/Order/${id}`;
+  console.log("Formatted Shopify GID:", id);
+
+  const GET_ORDERS_QUERY = `
+    query order($id: ID!) {
+      order(id: $id) {
+        id
+        email
+        name
+        processedAt
+        registeredSourceUrl
+        taxesIncluded
+        legacyResourceId
+        fulfillable
+        customerLocale
+        phone
+        displayFinancialStatus
+        confirmed
+        closed
+        closedAt
+        cancelReason
+        cancelledAt
+        createdAt
+        updatedAt
+        tags
+        totalWeight
+        subtotalPriceSet {
+          presentmentMoney {
+            amount
+            currencyCode
+          }
+          shopMoney {
+            amount
+            currencyCode
+          }
+        }
+        lineItems(first: 20) {
+          edges {
+            node {
+              id
+              name
+              nonFulfillableQuantity
+              quantity
+              sku
+              taxable
+              title
+              unfulfilledQuantity
+              variantTitle
+              vendor
+              originalTotalSet {
+                presentmentMoney { amount currencyCode } 
+                shopMoney { amount currencyCode } 
+              }
+              product { 
+                id 
+                productType 
+                title 
+                vendor 
+                updatedAt 
+                tags 
+                publishedAt 
+                handle 
+                descriptionHtml 
+                description 
+                createdAt 
+              }
+              variant { 
+                id
+                barcode
+                compareAtPrice
+                createdAt
+                displayName
+                inventoryQuantity
+                price
+                title
+                updatedAt
+                image { id altText url width }
+              }
+              taxLines { 
+                priceSet { 
+                  presentmentMoney { amount currencyCode } 
+                  shopMoney { amount currencyCode } 
+                } 
+                rate
+                ratePercentage
+                title
+              }
+            }
+          }
+          pageInfo { 
+            hasNextPage 
+            endCursor 
+            hasPreviousPage 
+            startCursor 
+          } 
+        }
+        fulfillments { 
+          id
+          createdAt
+          updatedAt
+          deliveredAt
+          displayStatus
+          estimatedDeliveryAt
+          legacyResourceId
+          name
+          status
+          totalQuantity
+          location { id name }
+          trackingInfo { company number url }
+        } 
+        totalPriceSet { 
+          presentmentMoney { amount currencyCode } 
+          shopMoney { amount currencyCode } 
+        } 
+        shippingLine { 
+          id
+          title
+          carrierIdentifier
+          custom
+          code
+          phone
+          originalPriceSet { 
+            presentmentMoney { amount currencyCode } 
+            shopMoney { amount currencyCode } 
+          }
+          source
+          shippingRateHandle
+        }
+        shippingAddress { 
+          address1
+          address2
+          city
+          country
+          firstName
+          lastName
+          phone
+          province
+          zip
+          countryCode
+          provinceCode
+        }
+        billingAddress { 
+          address1
+          address2
+          city
+          country
+          firstName
+          lastName
+          phone
+          province
+          zip
+          countryCode
+        }
+        customer { 
+          id
+          canDelete
+          createdAt
+          displayName
+          email
+          firstName
+          lastName
+          hasTimelineComment
+          locale
+          note
+          updatedAt
+        }
+        currentSubtotalPriceSet { 
+          presentmentMoney { amount currencyCode } 
+          shopMoney { amount currencyCode } 
+        }
+        currentTaxLines { 
+          channelLiable
+          priceSet { 
+            presentmentMoney { amount currencyCode } 
+            shopMoney { amount currencyCode } 
+          }
+          rate
+          ratePercentage
+          title
+        }
+      }
+    }
+  `;
+
+  const session = res.locals.shopify.session;
+
+  if (!session) {
+    return res.status(401).json({ error: "Unauthorized: No active session found" });
+  }
+
+  const client = new shopify.api.clients.Graphql({ session });
+
+  try {
+    const variables = { id: id }; 
+    console.log("GraphQL Variables:", variables);
+
+    const response = await client.request(GET_ORDERS_QUERY, variables); 
+
+    if (!response.data || !response.data.order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    return res.json(response.data.order);
+  } catch (error) {
+    console.error("Error fetching order:", error);
+    return res.status(500).json({ error: "Failed to fetch order", details: error.message });
+  }
+});
+
+
 export default router;
 
-const ordereceived={
+const ordereceived = {
   id: 6372088479811,
   admin_graphql_api_id: 'gid://shopify/Order/6372088479811',
   app_id: 1354745,
@@ -280,7 +502,7 @@ const ordereceived={
   order_status_url: 'https://bubble-bazaar-store.myshopify.com/62014423107/orders/0797e0137568554fbee9b811285e8685/authenticate?key=0eb632da9d3fcb6708f8e89ff69d0d96',
   original_total_additional_fees_set: null,
   original_total_duties_set: null,
-  payment_gateway_names: [ 'manual' ],
+  payment_gateway_names: ['manual'],
   phone: null,
   po_number: null,
   presentment_currency: 'INR',
@@ -513,3 +735,4 @@ const ordereceived={
   shipping_lines: [],
   returns: []
 }
+

@@ -25,8 +25,8 @@ export function NavigationBar() {
         <li title='About us'><NavLink to="/about" className={({isActive}) => isActive ? "active": ""}> <InfoIcon /> </NavLink></li>
         <li title='Graphs'><NavLink to="/graph" className={({isActive}) => isActive ? "active": ""}> <BarChartIcon /> </NavLink></li>
         <li title='Statistics'><NavLink to="/statistics" className={({isActive}) => isActive ? "active": ""}> <TrendingUpIcon /> </NavLink></li>
-        <li title='Users'><NavLink to="/user" className={({isActive}) => isActive ? "active": ""}> <GroupIcon /> </NavLink></li>
-        <li title='Settings'><NavLink to="/settings" className={({isActive}) => isActive ? "active": ""}> <SettingsIcon /> </NavLink></li> */}
+        <li title='Users'><NavLink to="/user" className={({isActive}) => isActive ? "active": ""}> <GroupIcon /> </NavLink></li>*/}
+       <li title='Order'><NavLink to="/order" className={({isActive}) => isActive ? "active": ""}> <SettingsIcon /> </NavLink></li> 
       </ul>
     </div>
   )

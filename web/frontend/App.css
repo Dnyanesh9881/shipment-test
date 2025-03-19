@@ -142,3 +142,132 @@ a.active {
     text-align: center;
     padding: 0px 15px;
 }
+
+
+  /* Apply the same widths to table cells */
+  .Polaris-DataTable__Table th:nth-child(1),
+  .Polaris-DataTable__Table td:nth-child(1) {
+    width: 10%;
+  }
+  
+  .Polaris-DataTable__Table th:nth-child(2),
+  .Polaris-DataTable__Table td:nth-child(2) {
+    width: 15%;
+  }
+  
+  .Polaris-DataTable__Table th:nth-child(3),
+  .Polaris-DataTable__Table td:nth-child(3) {
+    width: 20%;
+  }
+  
+  .Polaris-DataTable__Table th:nth-child(4),
+  .Polaris-DataTable__Table td:nth-child(4) {
+    width: 10%;
+  }
+  
+  .Polaris-DataTable__Table th:nth-child(5),
+  .Polaris-DataTable__Table td:nth-child(5) {
+    width: 35%;
+    white-space: normal !important; /* Allows text to wrap */
+    word-break: break-word; /* Breaks words to prevent overflow */
+    overflow-wrap: break-word;
+  }
+  
+  .Polaris-DataTable__Table th:nth-child(6),
+  .Polaris-DataTable__Table td:nth-child(6) {
+    width: 10%;
+  }
+  
+ 
+  .hh-grayBox {
+    background-color: #F8F8F8;
+    padding: 35px;
+    margin-top: 20px;
+    position: relative;
+  }
+  
+  .order-tracking {
+    text-align: left;
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 30px;
+  }
+  
+  .order-tracking:last-child {
+    padding-bottom: 0; /* Remove bottom padding for last step */
+  }
+  
+  .order-tracking .is-complete {
+    display: block;
+    position: relative;
+    border-radius: 50%;
+    height: 30px;
+    width: 30px;
+    border: 0px solid #AFAFAF;
+    background-color: #f7be16;
+    z-index: 2;
+  }
+  
+  .order-tracking .is-complete:after {
+    content: '';
+    position: absolute;
+    height: 14px;
+    width: 7px;
+    top: -2px;
+    bottom: 0;
+    left: 5px;
+    margin: auto 0;
+    border: 0px solid #AFAFAF;
+    border-width: 0px 2px 2px 0;
+    transform: rotate(45deg);
+    opacity: 0;
+  }
+  
+  .order-tracking.completed .is-complete {
+    border-color: #27aa80;
+    border-width: 0px;
+    background-color: #27aa80;
+  }
+  
+  .order-tracking.completed .is-complete:after {
+    border-color: #fff;
+    border-width: 0px 3px 3px 0;
+    width: 7px;
+    left: 11px;
+    opacity: 1;
+  }
+  
+  .order-tracking p {
+    color: #A4A4A4;
+    font-size: 16px;
+    margin: 0;
+  }
+  
+  .order-tracking p span {
+    display: block;
+    font-size: 14px;
+  }
+  
+  .order-tracking.completed p {
+    color: #000;
+  }
+  
+  /* Vertical Line */
+  .order-tracking:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    width: 3px;
+    height: calc(100% - 15px); /* Ensures line does not exceed last circle */
+    background-color: #f7be16;
+    left: 15px;
+    top: 30px;
+    z-index: 0;
+  }
+  
+  .order-tracking.completed:not(:last-child)::before {
+    background-color: #27aa80;
+  }
+  

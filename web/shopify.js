@@ -20,6 +20,7 @@ const shopify = shopifyApp({
   api: {
     apiVersion: LATEST_API_VERSION,
     restResources,
+    isEmbeddedApp: true,
     // scopes: ["read_orders", "write_orders", "read_products", "write_products"],
     future: {
       customerAddressDefaultFix: true,

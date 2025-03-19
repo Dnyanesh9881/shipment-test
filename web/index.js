@@ -8,18 +8,22 @@ import shopify from "./shopify.js";
 import productCreator from "./product-creator.js";
 import PrivacyWebhookHandlers from "./privacy.js";
 import ordersRoutes from "./routes/orders.js";
+import shipmentRoutes from "./routes/shipment.js";
+import cors from "cors";
+import { DeliveryMethod } from "@shopify/shopify-api";
 
 const PORT = parseInt(
   process.env.BACKEND_PORT || process.env.PORT || "3000",
   10
 );
-
 const STATIC_PATH =
   process.env.NODE_ENV === "production"
     ? `${process.cwd()}/frontend/dist`
     : `${process.cwd()}/frontend/`;
 
 const app = express();
+app.use(cors({}));
+
 console.log("WORKING FINE");
 // Set up Shopify authentication and webhook handling
 app.get(shopify.config.auth.path, shopify.auth.begin());
@@ -31,15 +35,61 @@ app.get(
 app.post(
   shopify.config.webhooks.path,
   shopify.processWebhooks({
-    webhookHandlers: PrivacyWebhookHandlers
+    webhookHandlers: {
+    
+      CUSTOMERS_DATA_REQUEST: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/api/webhooks",
+        callback: async (topic, shop, body, webhookId) => {
+          const payload = JSON.parse(body);
+        },
+      },
+      CUSTOMERS_REDACT: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/api/webhooks",
+        callback: async (topic, shop, body, webhookId) => {
+          const payload = JSON.parse(body);
+        },
+      },
+      SHOP_REDACT: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/api/webhooks",
+        callback: async (topic, shop, body, webhookId) => {
+          const payload = JSON.parse(body);
+        },
+      },
+      ORDERS_CREATE: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/api/webhooks",
+        callback: async (topic, shop, body, webhookId) => {
+          const payload = JSON.parse(body);
+          console.log("New order received:", payload);
+        }
+      },
+      PRODUCTS_UPDATE: {
+        deliveryMethod: DeliveryMethod.Http,
+        callbackUrl: "/api/webhooks",
+        callback: async (topic, shop, body, webhookId) => {
+          const payload = JSON.parse(body);
+          console.log("Product updated received:", payload);
+        },
+      },
+    }
   })
 );
 
 // If you are adding routes outside of the /api path, remember to
 // also add a proxy rule for them in web/frontend/vite.config.js
-
+const addSessionShopToReqParams = (req, res, next) => {
+	const shop = res.locals?.shopify?.session?.shop;
+	if (shop && !req.query.shop) {
+		req.query.shop = shop;
+	}
+	console.log("SHOP:", shop, req.query.shop);
+	return next();
+};
 app.use("/api/*", shopify.validateAuthenticatedSession());
-
+app.use("/*", addSessionShopToReqParams);
 app.use(express.json());
 
 app.get("/api/store/info", async (req, res) => {
@@ -86,7 +136,7 @@ app.get("/api/store/info", async (req, res) => {
 
     const response = await client.request(query);
 
-    console.log("storeInfo", response.data.shop);
+    // console.log("storeInfo", response.data.shop);
 
     res.status(200).send(response.data.shop);
   } catch (error) {
@@ -126,7 +176,6 @@ app.get("/api/collections", async (req, res) => {
   }
 });
 
-
 app.get("/api/products/count", async (_req, res) => {
   const client = new shopify.api.clients.Graphql({
     session: res.locals.shopify.session,
@@ -160,6 +209,7 @@ app.post("/api/products", async (_req, res) => {
 app.use(shopify.cspHeaders());
 app.use(serveStatic(STATIC_PATH, { index: false }));
 app.use("/api", ordersRoutes);
+app.use("/api", shipmentRoutes);
 
 app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
   return res

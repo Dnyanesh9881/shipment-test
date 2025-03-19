@@ -20,6 +20,20 @@ export default function HomePage() {
     refetchOnWindowFocus: false,
   });
 
+  const { getFullfilmentOrderId, refetch: fetFulfillmentOrderId } = useQuery({
+    queryKey: ["fulfillment"],
+    queryFn: async () => {
+      try {
+        const response = await fetch("/api/fulfillment");
+        const data = await response.json();
+        console.log("FULFILLMENT ORDER ID", data);
+        return data;
+      } catch (error) {
+        console.log("ERROR IN GETTING FULFILLMENTORDER ID ", error);
+      }
+    },
+    refetchOnWindowFocus: false,
+  });
   const {
     productCountData,
     refetch: refetchProductCount,

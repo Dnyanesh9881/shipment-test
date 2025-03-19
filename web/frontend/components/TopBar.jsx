@@ -23,7 +23,7 @@ export function TopBar() {
                 <img className='logo' src="../assets/logo.png" alt="logo image" />
                 <h1 className='text-bold h4'>{storeData.name}</h1>
                 <NavLink to="/"> Sales </NavLink>
-                {/* <NavLink to="/products"> Products </NavLink> */}
+                <NavLink to="/menu"> Orders </NavLink>
             </div>
         </div>
     )

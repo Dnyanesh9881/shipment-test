@@ -18,7 +18,9 @@ export default function App() {
         <AppBridgeProvider>
           <QueryProvider>
             <NavMenu
-              navigationLinks={[]}
+              navigationLinks={[
+                
+              ]}
             />
             <div className="main-section">
               <div className="menu-section">
