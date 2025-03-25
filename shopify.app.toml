@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "525f24980473e535a3a43889943037f9"
-application_url = "https://7776-106-219-159-62.ngrok-free.app"
+application_url = "https://phpbb-enquiry-keyboard-baseline.trycloudflare.com"
 embedded = true
 name = "shipment-test"
 handle = "shipment-test-app"
@@ -25,9 +25,9 @@ scopes = "read_assigned_fulfillment_orders,read_collection_listings,read_custome
 
 [auth]
 redirect_urls = [
-  "https://7776-106-219-159-62.ngrok-free.app/auth/callback",
-  "https://7776-106-219-159-62.ngrok-free.app/auth/shopify/callback",
-  "https://7776-106-219-159-62.ngrok-free.app/api/auth/callback"
+  "https://phpbb-enquiry-keyboard-baseline.trycloudflare.com/auth/callback",
+  "https://phpbb-enquiry-keyboard-baseline.trycloudflare.com/auth/shopify/callback",
+  "https://phpbb-enquiry-keyboard-baseline.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

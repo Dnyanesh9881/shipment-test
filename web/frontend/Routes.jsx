@@ -16,10 +16,14 @@ import { Routes as ReactRouterRoutes, Route } from "react-router-dom";
  */
 export default function Routes({ pages }) {
   const routes = useRoutes(pages);
-  const routeComponents = routes.map(({ path, component: Component }) => (
-    <Route key={path} path={path} element={<Component />} />
-  ));
-
+  console.log("routes", routes)
+  const routeComponents = routes.map(({ path, component: Component }) => {
+    if (path === "/order") {
+      return <Route key={path} path="/order/:awb" element={<Component />} />;
+    }
+    return <Route key={path} path={path} element={<Component />} />;
+  });
+  
   const NotFound = routes.find(({ path }) => path === "/notFound").component;
 
   return (

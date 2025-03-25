@@ -91,7 +91,7 @@ export default {
 
       //   console.log("New order body:", data);
 
-      //   const response = await axios('http://localhost:5001/v1/user/shipment/new', {
+      //   const response = await axios(`${process.env.SHIPMENT_SERVICE_URL}/user/shipment/new`, {
       //     method: "POST",
       //     headers: { Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6ImFua2l0Lm1pc2hyYSIsInVzZXJFbWFpbCI6ImFua2l0Lm1pc2hyYUB0ZWNoZWFnbGUuaW4iLCJwcm9qZWN0TmFtZSI6IlRlc3RpbmciLCJpYXQiOjE3MzU4Mjc2MDB9.I6R5kmY8HxowzMuZFeLWaUGFp0rFHQnGfS92Uil_5Nc" },
       //     data: data

@@ -270,4 +270,7 @@ a.active {
   .order-tracking.completed:not(:last-child)::before {
     background-color: #27aa80;
   }
-  
+  .select-btn-container{
+    width: fit-content;
+    margin-bottom: 1rem;
+  }

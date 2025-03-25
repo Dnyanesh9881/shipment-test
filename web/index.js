@@ -10,6 +10,9 @@ import PrivacyWebhookHandlers from "./privacy.js";
 import ordersRoutes from "./routes/orders.js";
 import shipmentRoutes from "./routes/shipment.js";
 import cors from "cors";
+import dotenv from 'dotenv';
+
+dotenv.config();
 import { DeliveryMethod } from "@shopify/shopify-api";
 
 const PORT = parseInt(
@@ -21,6 +24,8 @@ const STATIC_PATH =
     ? `${process.cwd()}/frontend/dist`
     : `${process.cwd()}/frontend/`;
 
+
+console.log(process.env.SHIPMENT_SERVICE_URL, process.env.TRACKING_URL, process.env.USER_AUTHORIZATION_TOKEN)
 const app = express();
 app.use(cors({}));
 
@@ -36,7 +41,7 @@ app.post(
   shopify.config.webhooks.path,
   shopify.processWebhooks({
     webhookHandlers: {
-    
+
       CUSTOMERS_DATA_REQUEST: {
         deliveryMethod: DeliveryMethod.Http,
         callbackUrl: "/api/webhooks",
@@ -81,12 +86,12 @@ app.post(
 // If you are adding routes outside of the /api path, remember to
 // also add a proxy rule for them in web/frontend/vite.config.js
 const addSessionShopToReqParams = (req, res, next) => {
-	const shop = res.locals?.shopify?.session?.shop;
-	if (shop && !req.query.shop) {
-		req.query.shop = shop;
-	}
-	console.log("SHOP:", shop, req.query.shop);
-	return next();
+  const shop = res.locals?.shopify?.session?.shop;
+  if (shop && !req.query.shop) {
+    req.query.shop = shop;
+  }
+  console.log("SHOP:", shop, req.query.shop);
+  return next();
 };
 app.use("/api/*", shopify.validateAuthenticatedSession());
 app.use("/*", addSessionShopToReqParams);

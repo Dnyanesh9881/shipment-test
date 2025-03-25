@@ -53,7 +53,8 @@ router.post("/shipment/create", async (req, res) => {
                     }
                 ],
                 trackingInfo: {
-                    number:shipmentResp.data.data.assignedAWBNumbers
+                    number:shipmentResp.data.data.assignedAWBNumbers,
+                    url:`https://4fbc-106-219-154-30.ngrok-free.app/tracking/${shipmentResp.data.data.assignedAWBNumbers}`
                 },
                 notifyCustomer: true,
                 originAddress: {
@@ -85,8 +86,12 @@ async function createShipment(payload) {
         const data = {
             governmentId: "NA",
             invoiceNumber: "Ship15454",
-            invoiceDate: "2023-10-06 11:56:39",
+            invoiceDate: payload.createdAt,
             isScheduledConfirmed: true,
+            orderNo:payload.name,
+            destinationLocation:payload.destinationLocation,
+            sourceLocation: payload.sourceLocation,
+            hubLocation: payload.hubLocation,
             receiverDetails: {
                 email: payload.customer.email,
                 address: {
@@ -102,12 +107,12 @@ async function createShipment(payload) {
             senderDetails: {
                 email: "sender@example.in",
                 address: {
-                    city: "gurgaon",
-                    state: "Haryana",
-                    addressLine: "sample sender address line",
-                    pincode: "123456"
+                    city: payload.fulfillmentOrders?.edges[0]?.node?.assignedLocation?.city,
+                    state: payload.fulfillmentOrders?.edges[0]?.node?.assignedLocation?.province,
+                    addressLine: payload.fulfillmentOrders?.edges[0]?.node?.assignedLocation?.address1,
+                    pincode: payload.fulfillmentOrders?.edges[0]?.node?.assignedLocation?.zip
                 },
-                pincode: "123456",
+                pincode: payload.fulfillmentOrders?.edges[0]?.node?.assignedLocation?.zip,
                 phoneNo: "9999999999",
                 altPhoneNo: "9898989898"
             },
@@ -133,6 +138,7 @@ async function createShipment(payload) {
                 quantity: item["node"].quantity,
                 productId: item["node"].id
             }))
+
         };
 
         console.log("New order body:", data);
@@ -205,5 +211,53 @@ router.get("/shipment/:awb", async(req, res) => {
     res.status(500).json({ error: error.message });
   }
 })
+
+router.get("/locations", async (req, res) => {
+  
+    const GET_ORDERS_QUERY = `query {
+        locations(first: 10) {
+    edges {
+      node {
+        id
+        legacyResourceId
+        name
+        address {
+          address1
+          address2
+          city
+          province
+          country
+          zip
+          latitude
+          longitude
+        }
+        createdAt
+      }
+    }
+  }
+      }`
+
+    const session = res.locals.shopify.session;
+  
+    if (!session) {
+      return res.status(401).json({ error: "Unauthorized: No active session found" });
+    }
+  
+    const client = new shopify.api.clients.Graphql({ session });
+        
+    try {
+  
+      const response = await client.request(GET_ORDERS_QUERY);
+       console.log("GET LOCATIONS RESPONSE", response.data.locations.edges);
+      if (!response.data.locations || !response.data.locations.edges) {
+        return res.status(404).json({ error: "LOCATIONS not found" });
+      }
+  
+      return res.json(response.data.locations.edges);
+    } catch (error) {
+      console.error("Error fetching LOCATIONS:", error);
+      return res.status(500).json({ error: "Failed to fetch LOCATIONS", details: error.message });
+    }
+  });
 export default router;
 

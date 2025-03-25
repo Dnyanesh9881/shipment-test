@@ -20,20 +20,20 @@ export default function HomePage() {
     refetchOnWindowFocus: false,
   });
 
-  const { getFullfilmentOrderId, refetch: fetFulfillmentOrderId } = useQuery({
-    queryKey: ["fulfillment"],
-    queryFn: async () => {
-      try {
-        const response = await fetch("/api/fulfillment");
-        const data = await response.json();
-        console.log("FULFILLMENT ORDER ID", data);
-        return data;
-      } catch (error) {
-        console.log("ERROR IN GETTING FULFILLMENTORDER ID ", error);
-      }
-    },
-    refetchOnWindowFocus: false,
-  });
+  // const { getFullfilmentOrderId, refetch: fetFulfillmentOrderId } = useQuery({
+  //   queryKey: ["fulfillment"],
+  //   queryFn: async () => {
+  //     try {
+  //       const response = await fetch("/api/fulfillment");
+  //       const data = await response.json();
+  //       console.log("FULFILLMENT ORDER ID", data);
+  //       return data;
+  //     } catch (error) {
+  //       console.log("ERROR IN GETTING FULFILLMENTORDER ID ", error);
+  //     }
+  //   },
+  //   refetchOnWindowFocus: false,
+  // });
   const {
     productCountData,
     refetch: refetchProductCount,
@@ -67,17 +67,18 @@ export default function HomePage() {
   return (
     <Page fullWidth>
       <div className="home-section">
-        <div className="graphs-section">
-          <OrderGraphs />
-        </div>
+       
         <div className="cards-section">
           <Layout>
             <Card title="Total Order" data={allOrders.length} />
             <Card title="Fullfilled Order" data={allOrders.filter((order) => order.fulfillments.length !==0).length} />
             <Card title="Remaining Order" data={allOrders.length - allOrders.filter((order) => order.fulfillments.length !==0).length} />
             <Card title="Total Products" data={totalProducts} />
-            <Card title="Total Collections" data={totalCollections.length} />
+            {/* <Card title="Total Collections" data={totalCollections.length} /> */}
           </Layout>
+        </div>
+        <div className="graphs-section">
+          <OrderGraphs />
         </div>
         <div className="order-details-section">
           {/* <OrderDetails /> */}

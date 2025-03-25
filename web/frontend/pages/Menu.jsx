@@ -2,11 +2,13 @@ import { useAppBridge } from '@shopify/app-bridge-react';
 import { Page, LegacyCard, DataTable, Button } from '@shopify/polaris';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
+import { useNavigate } from 'react-router-dom';
 
 function menu() {
   const [allOrders, setAllOrders] = useState([]);
   const [rowsData, setRowsData] = useState([]);
  const shopify = useAppBridge();
+ const navigate=useNavigate();
  console.log("SHOPIFY", shopify);
   const { allOrdersData, refetch: fetchAllOrders } = useQuery({
     queryKey: ["orders"],
@@ -19,9 +21,9 @@ function menu() {
         order.name, 
         'Processing', 
         `${order?.customer?.firstName} ${order?.customer?.lastName}`, 
-        order.lineItems?.edges?.reduce((acc, item) => acc + (item.grams || 0), 0), 
+        order.totalWeight, 
         `${order.shippingAddress?.address1}, ${order.shippingAddress?.city}, ${order.shippingAddress?.zip}`, 
-        order.fulfillments.length===0? <Button onClick={() => handleCreateShipment(order)}>Create Shipment</Button>: "Order Shipped"
+       !order.isDeliverable ? "Not Deliverable":order.fulfillments.length===0? <Button primary onClick={() => handleCreateShipment(order)}>Create Shipment</Button>: <Button monochrome outline  onClick={() => trackOrder(order)}>Track Order</Button>
       ]));
       setRowsData(rowData);
       console.log("ROW DATA", data);
@@ -63,8 +65,11 @@ function menu() {
       console.error("Error creating shipment:", error);
     }
   }
-  
-
+  function trackOrder(order){
+    console.log(order);
+    console.log(order.fulfillments[0]?.trackingInfo[0]?.number)
+    navigate(`/order/${order.fulfillments[0]?.trackingInfo[0]?.number}`);
+  }
   return (
     <Page title="ORDERS" fullWidth>
       <LegacyCard fullWidth>

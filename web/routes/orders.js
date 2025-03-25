@@ -1,15 +1,361 @@
 import express from "express";
 import shopify from "../shopify.js"; // Import Shopify app setup
+import { findHUb, findNearestLocation } from "../utility/latLongDistance.js";
 
 const router = express.Router();
 
 // Fetch all orders
 router.get("/orders", async (req, res) => {
   try {
-    const GET_ORDERS_QUERY = `
-  query {
-    orders(first: 40, query: "financial_status:'paid'") {
-      nodes { 
+    const GET_ORDERS_QUERY = `query {
+      orders(first: 100, query: "financial_status:'paid'") {
+      nodes {
+          id
+          email
+          name
+          processedAt
+          registeredSourceUrl
+          taxesIncluded
+          legacyResourceId
+          fulfillable
+          customerLocale
+          phone
+          displayFinancialStatus
+          confirmed
+          closed
+          closedAt
+          cancelReason
+          cancelledAt
+          createdAt
+          updatedAt
+          tags
+          totalWeight
+        subtotalPriceSet{
+        presentmentMoney{
+              amount
+              currencyCode
+            }
+        shopMoney{
+              amount
+              currencyCode
+            }
+          }
+          lineItems(first: 20) {
+          edges {
+            node {
+                id
+                name
+                nonFulfillableQuantity
+                quantity
+                sku
+                taxable
+                title
+                unfulfilledQuantity
+                variantTitle
+                vendor
+              originalTotalSet { 
+                presentmentMoney { amount currencyCode } 
+                shopMoney { amount currencyCode }
+                }
+              product {
+                  id
+                  productType
+                  title
+                  vendor
+                  updatedAt
+                  tags
+                  publishedAt
+                  handle
+                  descriptionHtml
+                  description
+                  createdAt
+                }
+              variant {
+                  id
+                  barcode
+                  compareAtPrice
+                  createdAt
+                  displayName
+                  inventoryQuantity
+                  price
+                  title
+                  updatedAt
+                image { id altText url width }
+                }
+              taxLines { 
+                priceSet { 
+                  presentmentMoney { amount currencyCode } 
+                  shopMoney { amount currencyCode }
+                  }
+                  rate
+                  ratePercentage
+                  title
+                }
+              }
+            }
+          pageInfo {
+              hasNextPage
+              endCursor
+              hasPreviousPage
+              startCursor
+            }
+          }
+        fulfillments {
+            id
+            createdAt
+            updatedAt
+            deliveredAt
+            displayStatus
+            estimatedDeliveryAt
+            legacyResourceId
+            name
+            status
+            totalQuantity
+          location { id name }
+          trackingInfo { company number url }
+          } 
+        totalPriceSet { 
+          presentmentMoney { amount currencyCode } 
+          shopMoney { amount currencyCode }
+          } 
+        shippingLine {
+            id
+            title
+            carrierIdentifier
+            custom
+            code
+            phone
+          originalPriceSet { 
+            presentmentMoney { amount currencyCode } 
+            shopMoney { amount currencyCode }
+            }
+            source
+            shippingRateHandle
+          }
+        shippingAddress {
+            address1
+            address2
+            city
+            country
+            firstName
+            lastName
+            phone
+            province
+            zip
+            countryCode
+            provinceCode
+            latitude
+            longitude
+            name
+          }
+        billingAddress {
+            address1
+            address2
+            city
+            country
+            firstName
+            lastName
+            phone
+            province
+            zip
+            countryCode
+          }
+        customer {
+            id
+            canDelete
+            createdAt
+            displayName
+            email
+            firstName
+            lastName
+            hasTimelineComment
+            locale
+            note
+            updatedAt
+          }
+          fulfillmentOrders(first: 10) { 
+        edges {
+          node {
+                id
+                status
+            assignedLocation {
+                  address1
+                  address2
+                  city
+                  province
+                  zip
+                  name
+
+                }
+         destination{
+             location{
+                address{
+                      address1
+                      address2
+                      city
+                      latitude
+                      longitude
+                      province
+                      zip
+                    }
+                  }
+                }
+              }
+            }
+          }
+        currentSubtotalPriceSet { 
+          presentmentMoney { amount currencyCode } 
+          shopMoney { amount currencyCode }
+          }
+        currentTaxLines {
+            channelLiable
+          priceSet { 
+            presentmentMoney { amount currencyCode } 
+            shopMoney { amount currencyCode }
+            }
+            rate
+            ratePercentage
+            title
+          }
+        }
+      }
+    }
+      `;
+
+
+    const GET_LOCATIONS_QUERY = `query {
+        locations(first: 10) {
+      edges {
+      node {
+        id
+        legacyResourceId
+        name
+        address {
+          address1
+          address2
+          city
+          province
+          country
+          zip
+          latitude
+          longitude
+        }
+        createdAt
+      }
+      }
+      }
+      }`
+
+    const session = res.locals.shopify.session;
+
+    if (!session) {
+      return res.status(401).json({ error: "Unauthorized: No active session found" });
+    }
+
+    const client = new shopify.api.clients.Graphql({ session });
+
+    // Send query in the correct format
+    const response = await client.request(GET_ORDERS_QUERY);
+
+    const locationsResp = await client.request(GET_LOCATIONS_QUERY);
+    if (!locationsResp.data.locations || !locationsResp.data.locations.edges) {
+      return res.status(404).json({ error: "LOCATIONS not found" });
+    }
+    // console.log("ORDER response", response.data?.orders?.nodes.[0]);
+    // console.log("LOCATIONS response", locationsResp.data.locations.edges);
+    const respData = response.data.orders.nodes.map((order, i) => {
+      try {
+          let isDeliverable = false;
+          let hubLocation = null;
+          let sourceLocation = null;
+          
+          // Get warehouse location from order
+          let warehouseLocationFromOrder = order.fulfillmentOrders?.edges[0]?.node?.assignedLocation?.address1;
+  
+          // Find corresponding location data
+          const locationData = locationsResp.data.locations.edges.find((location) => {
+            if(i>=50)
+              console.log("Warehouse Match Check:", warehouseLocationFromOrder, location.node.address?.address1);
+              return location.node.address?.address1 === warehouseLocationFromOrder;
+          });
+            if(locationData && i>=50){
+              console.log(locationData);
+            }
+          let lat = null, long = null;
+          if (locationData) {
+              lat = locationData.node.address?.latitude;
+              long = locationData.node.address?.longitude;
+          }
+          if(i>=50){
+          console.log("Warehouse Location from Order:", warehouseLocationFromOrder);
+  
+          console.log("Warehouse Province:", order.fulfillmentOrders?.edges[0]?.node?.assignedLocation?.province, lat, long);
+          }
+          // **Find source location**
+          sourceLocation = findNearestLocation(order.fulfillmentOrders?.edges[0]?.node?.assignedLocation?.province, lat, long);
+  
+          // **If no source location, return early**
+          if (!sourceLocation) {
+              console.log("No source location. Setting isDeliverable to false.");
+              return {
+                  ...order,
+                  sourceLocation: null,
+                  destinationLocation: null,
+                  hubLocation: null,
+                  isDeliverable: false
+              };
+          }
+  
+          // **Find destination and hub location only if source exists**
+          let destinationLocation = findNearestLocation(
+              order.shippingAddress?.province, 
+              order.shippingAddress?.latitude, 
+              order.shippingAddress?.longitude
+          );
+  
+          hubLocation = findHUb(sourceLocation);
+          if(i>=50)
+          console.log("Processing Delivery Check:", hubLocation, destinationLocation, sourceLocation);
+          if (hubLocation && destinationLocation && sourceLocation) {
+              isDeliverable = true;
+          }
+  
+          return {
+              ...order,
+              destinationLocation: destinationLocation,
+              sourceLocation: sourceLocation,
+              hubLocation: hubLocation,
+              isDeliverable: isDeliverable
+          };
+      } catch (orderError) {
+          console.error("Error processing order:", orderError);
+          return { error: "Error processing order", details: orderError.message };
+      }
+  });
+  
+
+  res.json(respData);
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+
+    if (error.response && error.response.body) {
+      return res.status(error.response.code).json({ error: error.response.body });
+    }
+
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+});
+
+router.get("/orders/:id", async (req, res) => {
+  let id = req.params.id;
+  console.log("Original ID:", id);
+
+  id = `gid://shopify/Order/${id}`;
+  console.log("Formatted Shopify GID:", id);
+
+  const GET_ORDERS_QUERY = `
+      query {
+      order(id: "${id}") { 
         id
         email
         name
@@ -184,221 +530,7 @@ router.get("/orders", async (req, res) => {
           title
         }
       } 
-    }
-  }
-`;
-
-
-    const session = res.locals.shopify.session;
-
-    if (!session) {
-      return res.status(401).json({ error: "Unauthorized: No active session found" });
-    }
-
-    const client = new shopify.api.clients.Graphql({ session });
-
-    // Send query in the correct format
-    const response = await client.request(GET_ORDERS_QUERY);
-
-    // console.log("ORDER response", response.data?.orders?.nodes);
-    res.json(response.data?.orders?.nodes);
-  } catch (error) {
-    console.error("Error fetching orders:", error);
-
-    if (error.response && error.response.body) {
-      return res.status(error.response.code).json({ error: error.response.body });
-    }
-
-    res.status(500).json({ error: "Failed to fetch orders" });
-  }
-});
-
-router.get("/orders/:id", async (req, res) => {
-  let id = req.params.id;
-  console.log("Original ID:", id);
-
-  id = `gid://shopify/Order/${id}`;
-  console.log("Formatted Shopify GID:", id);
-
-  const GET_ORDERS_QUERY = `
-    query order($id: ID!) {
-      order(id: $id) {
-        id
-        email
-        name
-        processedAt
-        registeredSourceUrl
-        taxesIncluded
-        legacyResourceId
-        fulfillable
-        customerLocale
-        phone
-        displayFinancialStatus
-        confirmed
-        closed
-        closedAt
-        cancelReason
-        cancelledAt
-        createdAt
-        updatedAt
-        tags
-        totalWeight
-        subtotalPriceSet {
-          presentmentMoney {
-            amount
-            currencyCode
-          }
-          shopMoney {
-            amount
-            currencyCode
-          }
-        }
-        lineItems(first: 20) {
-          edges {
-            node {
-              id
-              name
-              nonFulfillableQuantity
-              quantity
-              sku
-              taxable
-              title
-              unfulfilledQuantity
-              variantTitle
-              vendor
-              originalTotalSet {
-                presentmentMoney { amount currencyCode } 
-                shopMoney { amount currencyCode } 
-              }
-              product { 
-                id 
-                productType 
-                title 
-                vendor 
-                updatedAt 
-                tags 
-                publishedAt 
-                handle 
-                descriptionHtml 
-                description 
-                createdAt 
-              }
-              variant { 
-                id
-                barcode
-                compareAtPrice
-                createdAt
-                displayName
-                inventoryQuantity
-                price
-                title
-                updatedAt
-                image { id altText url width }
-              }
-              taxLines { 
-                priceSet { 
-                  presentmentMoney { amount currencyCode } 
-                  shopMoney { amount currencyCode } 
-                } 
-                rate
-                ratePercentage
-                title
-              }
-            }
-          }
-          pageInfo { 
-            hasNextPage 
-            endCursor 
-            hasPreviousPage 
-            startCursor 
-          } 
-        }
-        fulfillments { 
-          id
-          createdAt
-          updatedAt
-          deliveredAt
-          displayStatus
-          estimatedDeliveryAt
-          legacyResourceId
-          name
-          status
-          totalQuantity
-          location { id name }
-          trackingInfo { company number url }
-        } 
-        totalPriceSet { 
-          presentmentMoney { amount currencyCode } 
-          shopMoney { amount currencyCode } 
-        } 
-        shippingLine { 
-          id
-          title
-          carrierIdentifier
-          custom
-          code
-          phone
-          originalPriceSet { 
-            presentmentMoney { amount currencyCode } 
-            shopMoney { amount currencyCode } 
-          }
-          source
-          shippingRateHandle
-        }
-        shippingAddress { 
-          address1
-          address2
-          city
-          country
-          firstName
-          lastName
-          phone
-          province
-          zip
-          countryCode
-          provinceCode
-        }
-        billingAddress { 
-          address1
-          address2
-          city
-          country
-          firstName
-          lastName
-          phone
-          province
-          zip
-          countryCode
-        }
-        customer { 
-          id
-          canDelete
-          createdAt
-          displayName
-          email
-          firstName
-          lastName
-          hasTimelineComment
-          locale
-          note
-          updatedAt
-        }
-        currentSubtotalPriceSet { 
-          presentmentMoney { amount currencyCode } 
-          shopMoney { amount currencyCode } 
-        }
-        currentTaxLines { 
-          channelLiable
-          priceSet { 
-            presentmentMoney { amount currencyCode } 
-            shopMoney { amount currencyCode } 
-          }
-          rate
-          ratePercentage
-          title
-        }
-      }
-    }
+}
   `;
 
   const session = res.locals.shopify.session;
@@ -410,11 +542,9 @@ router.get("/orders/:id", async (req, res) => {
   const client = new shopify.api.clients.Graphql({ session });
 
   try {
-    const variables = { id: id }; 
-    console.log("GraphQL Variables:", variables);
 
-    const response = await client.request(GET_ORDERS_QUERY, variables); 
-
+    const response = await client.request(GET_ORDERS_QUERY);
+    console.log("GET ORDER RESPONSE", response.data.order);
     if (!response.data || !response.data.order) {
       return res.status(404).json({ error: "Order not found" });
     }
@@ -735,4 +865,6 @@ const ordereceived = {
   shipping_lines: [],
   returns: []
 }
+
+
 

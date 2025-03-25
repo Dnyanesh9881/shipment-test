@@ -5,44 +5,58 @@ import { useQuery } from 'react-query';
 import { useParams } from "react-router-dom";
 
 function OrderTracking() {
-  const [length, setLength] = useState(0);
+  // const [length, setLength] = useState(0);
    const shopify = useAppBridge();
-   const [orderData, setOrderData]=useState({});
-  let { id } = useParams();
-  id = "6377672409155";
-
-  const fetchOrder = async () => {
+  //  const [orderData, setOrderData]=useState({});
+   const [shipmentData, setShipmentData]=useState({})
+  let { awb } = useParams();
+  // console.log(useParams())
+  console.log("useParams()",useParams());
+  // awb = "TEL00098916";
+  
+  const fetchLocations = async () => {
     try {
-      const response = await fetch(`/api/orders/${id}`);
+      const response = await fetch(`/api/locations`);
       if (!response.ok) {
-        throw new Error('Failed to fetch order data');
+        throw new Error("Failed to fetch Locations data");
       }
-      console.log("fetch Order", response.data);
-      setOrderData(response.data);
-      return await response.json();
+      const data = await response.json();
+      console.log("Fetched Locations:", data);
     } catch (error) {
-      console.error('Error fetching order:', error);
-      throw error; 
+      console.error("Error fetching Locations:", error);
     }
   };
-   useEffect(()=>{
-    fetchOrder();
-   }, [])
 
-  const { data: shipmentData, refetch: fetchShipment } = useQuery({
-    queryKey: ["shipment", orderData?.fulfillments?.[0]?.trackingInfo?.[0]?.number],
-    queryFn: async () => {
-      if (!orderData?.fulfillments?.[0]?.trackingInfo?.[0]?.number) return null;
-      const awb = orderData.fulfillments[0].trackingInfo[0].number;
-      console.log("AWB", awb);
-
+ 
+  const fetchShipment = async () => {
+    try {
+      if (!awb) return; // Avoid making a request if AWB is not available
       const response = await fetch(`/api/shipment/${awb}`);
-      if (!response.ok) throw new Error("Failed to fetch shipment data");
-      return response.json();
-    },
-    enabled: !!orderData?.fulfillments?.[0]?.trackingInfo?.[0]?.number,
-    refetchOnWindowFocus: false,
-  });
+      if (!response.ok) {
+        throw new Error("Failed to fetch shipment data");
+      }
+      const data = await response.json();
+      console.log("Fetched Shipment:", data[0]);
+      setShipmentData(data[0]);
+    } catch (error) {
+      console.error("Error fetching shipment:", error);
+    }
+  };
+
+ 
+  useEffect(() => {
+ 
+    fetchShipment();
+    fetchLocations();
+  }, [awb]); 
+
+ 
+  // useEffect(() => {
+  //   if (!orderData?.fulfillments?.[0]?.trackingInfo?.[0]?.number) return;
+  //   const awb = orderData.fulfillments[0].trackingInfo[0].number;
+  //   console.log("AWB:", awb);
+  //   fetchShipment(awb);
+  // }, [orderData]); 
 
   return (
     <Page fullWidth>
@@ -73,10 +87,10 @@ function OrderTracking() {
             <Grid.Cell columnSpan={{ xs: 6, sm: 4, md: 4, lg: 12, xl: 8 }}>
               <LegacyCard title="Order Details" sectioned>
                 <div>
-                  <p>Order No: {orderData?.name}</p>
-                  <p>Date: {orderData?.createdAt}</p>
-                  <p>Amount: {orderData?.subtotalPriceSet?.presentmentMoney?.amount}</p>
-                  <p>Weight: {orderData?.totalWeight}</p>
+                  <p>Order No: {shipmentData?.orderNo}</p>
+                  <p>Date: {shipmentData?.invoiceDate}</p>
+                  <p>Amount: {shipmentData?.paymentDetails?.amount}</p>
+                  <p>Weight: {shipmentData?.shipmentDetails?.weight}</p>
                 </div>
               </LegacyCard>
             </Grid.Cell>
@@ -84,9 +98,9 @@ function OrderTracking() {
             <Grid.Cell columnSpan={{ xs: 6, sm: 4, md: 4, lg: 12, xl: 8 }}>
               <LegacyCard title="Delivery Address" sectioned>
                 <div>
-                  <p>{`${orderData?.shippingAddress?.address1} ${orderData?.shippingAddress?.address2 || ''}`}</p>
-                  <p>{orderData?.shippingAddress?.zip}</p>
-                  <p>{orderData?.shippingAddress?.phone}</p>
+                  <p>{`${shipmentData?.receiverDetails?.address.addressLine}, ${shipmentData?.receiverDetails?.address.state}, ${shipmentData?.receiverDetails?.address.city}` || ""}</p>
+                  <p>{`${shipmentData?.receiverDetails?.address.state}, ${shipmentData?.receiverDetails?.address.city}, ${shipmentData?.receiverDetails?.address.pinCode}`}</p>
+                  <p>{shipmentData?.receiverDetails?.phoneNo}</p>
                 </div>
               </LegacyCard>
             </Grid.Cell>
