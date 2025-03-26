@@ -9,6 +9,7 @@ import productCreator from "./product-creator.js";
 import PrivacyWebhookHandlers from "./privacy.js";
 import ordersRoutes from "./routes/orders.js";
 import shipmentRoutes from "./routes/shipment.js";
+// import cors from "cors";
 import dotenv from 'dotenv';
 
 dotenv.config({ path: "../.env" });
@@ -26,6 +27,7 @@ const STATIC_PATH =
 
 console.log(process.env.SHIPMENT_SERVICE_URL, process.env.TRACKING_URL, process.env.USER_AUTHORIZATION_TOKEN)
 const app = express();
+// app.use(cors({}));
 
 console.log("WORKING FINE");
 // Set up Shopify authentication and webhook handling

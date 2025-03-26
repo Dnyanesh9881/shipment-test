@@ -1,6 +1,5 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-
 export function NavigationBar() {
   return (
     <div className='navmenu-section'>
@@ -10,7 +9,7 @@ export function NavigationBar() {
             Home
           </NavLink>
         </li>
-        <li title='Menu'><NavLink to="/menu" className={({isActive}) => isActive ? "active": ""}> Orders </NavLink></li>
+        <li title='Menu'><NavLink to="/menu" className={({isActive}) => isActive ? "active": ""}> Order </NavLink></li>
         {/* <li title='Search'><NavLink to="/search" className={({isActive}) => isActive ? "active": ""}> <SearchIcon /> </NavLink></li>
         <li title='Chat'><NavLink to="chat" className={({isActive}) => isActive ? "active": ""}> <ChatIcon /> </NavLink></li>
         <li title='About us'><NavLink to="/about" className={({isActive}) => isActive ? "active": ""}> <InfoIcon /> </NavLink></li>
