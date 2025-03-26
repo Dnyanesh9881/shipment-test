@@ -1,5 +1,4 @@
 import { DeliveryMethod } from "@shopify/shopify-api";
-import axios from "axios";
 
 /**
  * @type {{[key: string]: import("@shopify/shopify-api").WebhookHandler}}
