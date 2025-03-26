@@ -25,7 +25,7 @@ const STATIC_PATH =
     : `${process.cwd()}/frontend/`;
 
 
-console.log(process.env.SHIPMENT_SERVICE_URL, process.env.TRACKING_URL, process.env.USER_AUTHORIZATION_TOKEN)
+// console.log(process.env.SHIPMENT_SERVICE_URL, process.env.TRACKING_URL, process.env.USER_AUTHORIZATION_TOKEN)
 const app = express();
 // app.use(cors({}));
 
@@ -87,8 +87,10 @@ app.post(
 // also add a proxy rule for them in web/frontend/vite.config.js
 const addSessionShopToReqParams = (req, res, next) => {
   const shop = res.locals?.shopify?.session?.shop;
+  const host = res.locals?.shopify?.session?.host;
   if (shop && !req.query.shop) {
     req.query.shop = shop;
+    req.query.host = host;
   }
   console.log("SHOP:", shop, req.query.shop);
   return next();
