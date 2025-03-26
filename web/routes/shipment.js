@@ -54,7 +54,7 @@ router.post("/shipment/create", async (req, res) => {
                 ],
                 trackingInfo: {
                     number:shipmentResp.data.data.assignedAWBNumbers,
-                    url:`https://4fbc-106-219-154-30.ngrok-free.app/tracking/${shipmentResp.data.data.assignedAWBNumbers}`
+                    url:`${process.env.TRACKING_URL}/tracking/${shipmentResp.data.data.assignedAWBNumbers}`
                 },
                 notifyCustomer: true,
                 originAddress: {
@@ -143,9 +143,9 @@ async function createShipment(payload) {
 
         console.log("New order body:", data);
 
-        const response = await axios('http://localhost:5001/v1/user/shipment/new', {
+        const response = await axios(`${process.env.SHIPMENT_SERVICE_URL}/user/shipment/new`, {
             method: "POST",
-            headers: { Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6ImFua2l0Lm1pc2hyYSIsInVzZXJFbWFpbCI6ImFua2l0Lm1pc2hyYUB0ZWNoZWFnbGUuaW4iLCJwcm9qZWN0TmFtZSI6IlRlc3RpbmciLCJpYXQiOjE3MzU4Mjc2MDB9.I6R5kmY8HxowzMuZFeLWaUGFp0rFHQnGfS92Uil_5Nc" },
+            headers: { Authorization: `${process.env.USER_AUTHORIZATION_TOKEN}`},
             data: data
         });
         //   console.log("SHIPMENT DATA",response.data);
@@ -200,9 +200,9 @@ router.get("/shipment/:awb", async(req, res) => {
   try {
     const awb = req.params.awb;
 
-    const response = await axios(`http://localhost:5001/v1/user/shipment/get/${awb}`, {
+    const response = await axios(`${process.env.SHIPMENT_SERVICE_URL}/user/shipment/get/${awb}`, {
         method: "GET",
-        headers: { Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyTmFtZSI6ImFua2l0Lm1pc2hyYSIsInVzZXJFbWFpbCI6ImFua2l0Lm1pc2hyYUB0ZWNoZWFnbGUuaW4iLCJwcm9qZWN0TmFtZSI6IlRlc3RpbmciLCJpYXQiOjE3MzU4Mjc2MDB9.I6R5kmY8HxowzMuZFeLWaUGFp0rFHQnGfS92Uil_5Nc" },
+        headers: { Authorization: `${process.env.USER_AUTHORIZATION_TOKEN}`},
     });
       console.log("SHIPMENT DATA",response.data.data);
       return res.status(200).json(response.data.data);

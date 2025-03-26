@@ -1,6 +1,6 @@
 import express from "express";
 import shopify from "../shopify.js"; // Import Shopify app setup
-import { findHUb, findNearestLocation } from "../utility/latLongDistance.js";
+import { findHUb, findNearestLocation, haversineDistance } from "../utility/latLongDistance.js";
 
 const router = express.Router();
 
@@ -312,7 +312,12 @@ router.get("/orders", async (req, res) => {
               order.shippingAddress?.latitude, 
               order.shippingAddress?.longitude
           );
-  
+          const distance= haversineDistance(lat, long, order.shippingAddress?.latitude,  order.shippingAddress?.longitude);
+          if(i>=50)
+          console.log("distance", distance);
+            if(distance>50){
+              isDeliverable=false;
+            }
           hubLocation = findHUb(sourceLocation);
           if(i>=50)
           console.log("Processing Delivery Check:", hubLocation, destinationLocation, sourceLocation);
@@ -327,10 +332,12 @@ router.get("/orders", async (req, res) => {
               hubLocation: hubLocation,
               isDeliverable: isDeliverable
           };
+        
       } catch (orderError) {
           console.error("Error processing order:", orderError);
           return { error: "Error processing order", details: orderError.message };
       }
+    
   });
   
 
@@ -868,3 +875,8 @@ const ordereceived = {
 
 
 
+// https://bubble-bazaar-store.myshopify.com/products/rossignol-pursuit-12-ti-xelium-mens-skis-xel-110-b73-bindings-2015?key=8099c82cd5c05782fa441cd6c05f1b79a16f90abdb3d3d5260c0bb93074a9b2c&preview_theme_id=&_bt=eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaEpJaVppZFdKaWJHVXRZbUY2WVdGeUxYTjBiM0psTG0xNWMyaHZjR2xtZVM1amIyMEdPZ1pGVkE9PSIsImV4cCI6IjIwMjUtMDMtMjVUMTM6NTc6NDMuOTgxWiIsInB1ciI6InBlcm1hbmVudF9wYXNzd29yZF9ieXBhc3MifX0=--ff0bf5de4981850d60f008a7715d1d7d0b661311
+
+// https://bubble-bazaar-store.myshopify.com/collections/frontpage?key=8099c82cd5c05782fa441cd6c05f1b79a16f90abdb3d3d5260c0bb93074a9b2c&preview_theme_id=&_bt=eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaEpJaVppZFdKaWJHVXRZbUY2WVdGeUxYTjBiM0psTG0xNWMyaHZjR2xtZVM1amIyMEdPZ1pGVkE9PSIsImV4cCI6IjIwMjUtMDMtMjVUMTM6NTc6NDMuOTgxWiIsInB1ciI6InBlcm1hbmVudF9wYXNzd29yZF9ieXBhc3MifX0=--ff0bf5de4981850d60f008a7715d1d7d0b661311
+
+//https://bubble-bazaar-store.myshopify.com/products/rossignol-pursuit-12-ti-xelium-mens-skis-xel-110-b73-bindings-2015?key=8099c82cd5c05782fa441cd6c05f1b79a16f90abdb3d3d5260c0bb93074a9b2c&preview_theme_id=&_bt=eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaEpJaVppZFdKaWJHVXRZbUY2WVdGeUxYTjBiM0psTG0xNWMyaHZjR2xtZVM1amIyMEdPZ1pGVkE9PSIsImV4cCI6IjIwMjUtMDMtMjVUMTM6NTc6NDMuOTgxWiIsInB1ciI6InBlcm1hbmVudF9wYXNzd29yZF9ieXBhc3MifX0=--ff0bf5de4981850d60f008a7715d1d7d0b661311

@@ -12,7 +12,7 @@ import shipmentRoutes from "./routes/shipment.js";
 import cors from "cors";
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: "../.env" });
 import { DeliveryMethod } from "@shopify/shopify-api";
 
 const PORT = parseInt(
@@ -24,8 +24,8 @@ const STATIC_PATH =
     ? `${process.cwd()}/frontend/dist`
     : `${process.cwd()}/frontend/`;
 
-
-console.log(process.env.SHIPMENT_SERVICE_URL, process.env.TRACKING_URL, process.env.USER_AUTHORIZATION_TOKEN)
+    // console.log("ENV VARIABLES:", process.env);
+// console.log(process.env.SHIPMENT_SERVICE_URL, process.env.TRACKING_URL, process.env.USER_AUTHORIZATION_TOKEN)
 const app = express();
 app.use(cors({}));
 
