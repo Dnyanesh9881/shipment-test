@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "525f24980473e535a3a43889943037f9"
-application_url = "https://gratis-hurricane-reproduced-bomb.trycloudflare.com"
+application_url = "https://hill-painting-springs-subscribe.trycloudflare.com"
 embedded = true
 name = "shipment-test"
 handle = "shipment-test-app"
@@ -25,9 +25,9 @@ scopes = "read_assigned_fulfillment_orders,read_collection_listings,read_custome
 
 [auth]
 redirect_urls = [
-  "https://gratis-hurricane-reproduced-bomb.trycloudflare.com/auth/callback",
-  "https://gratis-hurricane-reproduced-bomb.trycloudflare.com/auth/shopify/callback",
-  "https://gratis-hurricane-reproduced-bomb.trycloudflare.com/api/auth/callback"
+  "https://hill-painting-springs-subscribe.trycloudflare.com/auth/callback",
+  "https://hill-painting-springs-subscribe.trycloudflare.com/auth/shopify/callback",
+  "https://hill-painting-springs-subscribe.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
