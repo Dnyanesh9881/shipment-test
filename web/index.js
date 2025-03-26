@@ -19,11 +19,19 @@ const PORT = parseInt(
   process.env.BACKEND_PORT || process.env.PORT || "3000",
   10
 );
+const addSessionShopToReqParams = (req, res, next) => {
+  const shop = res.locals?.shopify?.session?.shop;
+  if (shop && !req.query.shop) {
+    req.query.shop = shop;
+  }
+  console.log("SHOP:", shop, req.query.shop);
+  return next();
+};
+
 const STATIC_PATH =
   process.env.NODE_ENV === "production"
     ? `${process.cwd()}/frontend/dist`
     : `${process.cwd()}/frontend/`;
-
 
 // console.log(process.env.SHIPMENT_SERVICE_URL, process.env.TRACKING_URL, process.env.USER_AUTHORIZATION_TOKEN)
 const app = express();
@@ -85,14 +93,7 @@ app.post(
 
 // If you are adding routes outside of the /api path, remember to
 // also add a proxy rule for them in web/frontend/vite.config.js
-const addSessionShopToReqParams = (req, res, next) => {
-  const shop = res.locals?.shopify?.session?.shop;
-  if (shop && !req.query.shop) {
-    req.query.shop = shop;
-  }
-  console.log("SHOP:", shop, req.query.shop);
-  return next();
-};
+
 app.use("/api/*", shopify.validateAuthenticatedSession());
 app.use("/*", addSessionShopToReqParams);
 app.use(express.json());
