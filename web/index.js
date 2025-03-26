@@ -24,8 +24,8 @@ const STATIC_PATH =
     ? `${process.cwd()}/frontend/dist`
     : `${process.cwd()}/frontend/`;
 
-    // console.log("ENV VARIABLES:", process.env);
-// console.log(process.env.SHIPMENT_SERVICE_URL, process.env.TRACKING_URL, process.env.USER_AUTHORIZATION_TOKEN)
+
+console.log(process.env.SHIPMENT_SERVICE_URL, process.env.TRACKING_URL, process.env.USER_AUTHORIZATION_TOKEN)
 const app = express();
 app.use(cors({}));
 

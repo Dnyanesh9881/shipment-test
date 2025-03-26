@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "525f24980473e535a3a43889943037f9"
-application_url = "https://telephony-break-warning-backing.trycloudflare.com"
+application_url = "https://longest-cite-generation-operated.trycloudflare.com"
 embedded = true
 name = "shipment-test"
 handle = "shipment-test-app"
@@ -16,8 +16,8 @@ api_version = "2025-01"
 
   [[webhooks.subscriptions]]
   topics = [ "orders/create", "products/create", "products/update" ]
-  uri = "https://mumbai-charm-conference-achieved.trycloudflare.com/api/webhooks"
   compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+  uri = "/api/webhooks"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
@@ -25,9 +25,9 @@ scopes = "read_assigned_fulfillment_orders,read_collection_listings,read_custome
 
 [auth]
 redirect_urls = [
-  "https://telephony-break-warning-backing.trycloudflare.com/auth/callback",
-  "https://telephony-break-warning-backing.trycloudflare.com/auth/shopify/callback",
-  "https://telephony-break-warning-backing.trycloudflare.com/api/auth/callback"
+  "https://longest-cite-generation-operated.trycloudflare.com/auth/callback",
+  "https://longest-cite-generation-operated.trycloudflare.com/auth/shopify/callback",
+  "https://longest-cite-generation-operated.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
