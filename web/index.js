@@ -87,10 +87,8 @@ app.post(
 // also add a proxy rule for them in web/frontend/vite.config.js
 const addSessionShopToReqParams = (req, res, next) => {
   const shop = res.locals?.shopify?.session?.shop;
-  const host = res.locals?.shopify?.session?.host;
   if (shop && !req.query.shop) {
     req.query.shop = shop;
-    req.query.host = host;
   }
   console.log("SHOP:", shop, req.query.shop);
   return next();
