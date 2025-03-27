@@ -20,7 +20,7 @@ const PORT = parseInt(
   10
 );
 const addSessionShopToReqParams = (req, res, next) => {
-  const shop = "bubble-bazaar-store.myshopify.com";
+  const shop = process.env.SHOP;
   console.log("SHOP QUERY", shop);
   if (shop && !req.query.shop) {
     req.query.shop = shop;
