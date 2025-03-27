@@ -21,6 +21,7 @@ const PORT = parseInt(
 );
 const addSessionShopToReqParams = (req, res, next) => {
   const shop = res.locals?.shopify?.session?.shop;
+  console.log("SHOP QUERY", shop);
   if (shop && !req.query.shop) {
     req.query.shop = shop;
   }

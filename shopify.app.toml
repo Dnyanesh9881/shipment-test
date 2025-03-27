@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "525f24980473e535a3a43889943037f9"
-application_url = "https://stake-velvet-funky-princeton.trycloudflare.com"
+application_url = "https://minneapolis-cruises-references-mile.trycloudflare.com"
 embedded = true
 name = "shipment-test"
 handle = "shipment-test-app"
@@ -25,9 +25,9 @@ scopes = "read_assigned_fulfillment_orders,read_collection_listings,read_custome
 
 [auth]
 redirect_urls = [
-  "https://stake-velvet-funky-princeton.trycloudflare.com/auth/callback",
-  "https://stake-velvet-funky-princeton.trycloudflare.com/auth/shopify/callback",
-  "https://stake-velvet-funky-princeton.trycloudflare.com/api/auth/callback"
+  "https://minneapolis-cruises-references-mile.trycloudflare.com/auth/callback",
+  "https://minneapolis-cruises-references-mile.trycloudflare.com/auth/shopify/callback",
+  "https://minneapolis-cruises-references-mile.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
