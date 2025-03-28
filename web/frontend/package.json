@@ -23,6 +23,7 @@
     "@shopify/app-bridge-react": "^4.1.7",
     "@shopify/i18next-shopify": "^0.2.9",
     "@shopify/polaris": "^10.49.1",
+    "@shopify/polaris-icons": "^9.3.1",
     "@vitejs/plugin-react": "4.2.1",
     "chart.js": "^4.4.8",
     "compression": "^1.8.0",
